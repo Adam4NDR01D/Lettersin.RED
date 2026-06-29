@@ -101,7 +101,7 @@ header{
 #scroller{position:absolute; inset:0; overflow-y:scroll; overflow-x:hidden; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
 #scroller::-webkit-scrollbar{display:none;}
 #stream{position:relative; width:100%; max-width:var(--maxw); margin:0 auto; padding:46vh 28px;}
-.v{position:relative; margin:0 auto; padding:.18em 0; transform-origin:center center; will-change:transform,opacity; transition:color .5s var(--ease);}
+.v{position:relative; margin:0 auto; padding:.42em 0; transform-origin:center center; will-change:transform,opacity; transition:color .5s var(--ease);}
 .v .t{
   font-family:var(--font-scripture); font-weight:var(--scripture-weight);
   font-size:var(--scripture-size); line-height:1.46; color:var(--ink);
@@ -493,7 +493,7 @@ function measure(){
 }
 
 /* ---- magnification parameters ---- */
-const SIGMA=190, BOOST=0.62, MINOP=0.62;
+const SIGMA=150, BOOST=0.42, MINOP=0.64;
 let activeSet=new Set();
 let INK=[150,144,129], INKS=[44,40,32];
 function parseRGB(s){ s=(s||'').trim();
@@ -676,8 +676,9 @@ document.getElementById('aboutBtn').onclick=()=>openOv(document.getElementById('
 function landOpening(){
   // open on Matthew 5 (Sermon on the Mount): narrator in grey, the Beatitudes in red,
   // so the red-letter contrast reads instantly
-  centerOnIndex(0,false);
-  setTimeout(()=>centerOnIndex(0,false),80);
+  centerOnIndex(8,false);
+  setTimeout(()=>centerOnIndex(8,false),80);
+  setTimeout(()=>centerOnIndex(8,false),260);
 }
 
 /* ---- init ---- */
