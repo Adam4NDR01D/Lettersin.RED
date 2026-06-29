@@ -278,10 +278,13 @@ html.voice-on .v.aramaic{ }
     <button class="iconbtn scholar-only" id="voiceBtn" style="display:none" title="Surface the preserved Aramaic sayings">Original voice</button>
     <button class="iconbtn" id="tlBtn">Timeline</button>
     <button class="iconbtn hideSm" id="qBtn">Questions</button>
-    <div class="seg" id="themeSeg" title="Theme">
+    <div class="seg" id="magSeg" title="Magnify or classic reading">
+      <button data-mag="on" aria-pressed="true">Magnify</button>
+      <button data-mag="off" aria-pressed="false">Classic</button>
+    </div>
+    <div class="seg" id="themeSeg" title="Paper or space">
       <button data-theme="vellum" aria-pressed="true"><span class="dot t-vellum"></span></button>
       <button data-theme="obsidian" aria-pressed="false"><span class="dot t-obsidian"></span></button>
-      <button data-theme="editorial" aria-pressed="false"><span class="dot t-editorial"></span></button>
     </div>
     <button class="iconbtn" id="aboutBtn" title="About">?</button>
   </div>
@@ -512,6 +515,7 @@ function readThemeColors(){ const cs=getComputedStyle(html); INK=parseRGB(cs.get
 function paint(){
   const sc=scroller.scrollTop;
   const center=sc+vh/2;
+  const magOn=html.getAttribute('data-magnify')!=='off';
   // find window of nodes via binary search on tops
   let lo=0,hi=tops.length-1,start=0;
   const top=center-vh*0.85, bot=center+vh*0.85;
@@ -525,8 +529,8 @@ function paint(){
     if(nodeCenter>bot) break;
     const d=nodeCenter-center;
     const g=Math.exp(-(d*d)/(2*SIGMA*SIGMA));
-    const scale=1+BOOST*g;
-    const op=MINOP+(1-MINOP)*g;
+    const scale=magOn?(1+BOOST*g):1;
+    const op=magOn?(MINOP+(1-MINOP)*g):1;
     const n=nodeRefs[i];
     const el=n.el;
     el.style.transform=`scale(${scale.toFixed(3)})`;
@@ -683,6 +687,7 @@ function seg(id, attr, cb){
   });
 }
 document.querySelectorAll('#themeSeg button').forEach(b=>b.onclick=()=>{ setPressed('#themeSeg',b); html.setAttribute('data-theme',b.dataset.theme); readThemeColors(); });
+document.querySelectorAll('#magSeg button').forEach(b=>b.onclick=()=>{ setPressed('#magSeg',b); html.setAttribute('data-magnify',b.dataset.mag); });
 document.querySelectorAll('#transSeg button').forEach(b=>b.onclick=()=>{ setPressed('#transSeg',b); html.setAttribute('data-trans',b.dataset.trans); applyText(); });
 document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{ setPressed('#modeSeg',b); const m=b.dataset.mode; html.setAttribute('data-mode',m);
   document.getElementById('voiceBtn').style.display = m==='scholar'?'inline-block':'none';
