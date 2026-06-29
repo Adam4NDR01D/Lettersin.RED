@@ -1,0 +1,22 @@
+# --- Internal strategy / research / context — DO NOT publish ---
+About_Me.txt
+Letters-in-RED_Research-Findings_A-and-C.md
+Letters-in-RED_BUILDER-PROMPT.md
+Letters-in-RED_Master-Build-Prompt_v1.md
+Letters-in-RED_Research-Agenda.md
+*_BUILDER-PROMPT.md
+*_Master-Build-Prompt*.md
+*_Research-*.md
+About_Me*.txt
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Node (in case a build step is added later)
+node_modules/
+dist-ssr/
+*.local
