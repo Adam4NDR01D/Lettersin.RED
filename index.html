@@ -18,7 +18,7 @@
 }
 /* ---------- THEMES ---------- */
 html[data-theme="vellum"]{
-  --bg:#f1ece1; --bg2:#e9e2d3; --ink:#6c6456; --ink-strong:#2c2820; --red:#b3331f;
+  --bg:#f5f2ec; --bg2:#e9e4da; --ink:#74726f; --ink-strong:#23211e; --red:#b3331f;
   --paper:#fbf8f0; --rule:rgba(40,34,22,.14); --chip:rgba(40,34,22,.06);
   --font-scripture:"Cormorant Garamond", Georgia, serif;
   --font-greek:"Noto Serif", Georgia, serif;
@@ -27,7 +27,7 @@ html[data-theme="vellum"]{
   --scripture-size: 2.0rem; --scripture-weight:500;
 }
 html[data-theme="obsidian"]{
-  --bg:#13110d; --bg2:#0d0b08; --ink:#9a9384; --ink-strong:#ddd6c8; --red:#ff4d2e;
+  --bg:#0f1014; --bg2:#0a0a0e; --ink:#9a9aa0; --ink-strong:#eceaf2; --red:#ff4d3a;
   --paper:#1b1712; --rule:rgba(255,250,240,.13); --chip:rgba(255,250,240,.06);
   --font-scripture:"Spectral", Georgia, serif;
   --font-greek:"Noto Serif", Georgia, serif;
@@ -95,6 +95,15 @@ header{
 .ruler .rch{display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:22px; padding:0 5px; margin:2px 3px 2px 0; font-size:.66rem; color:var(--ink); border:1px solid transparent; border-radius:6px; cursor:pointer; transition:.2s;}
 .ruler .rch:hover{color:var(--ink-strong); border-color:var(--rule);}
 .ruler .rch.active{color:var(--bg); background:var(--red);}
+
+/* verse picker popover */
+#versePop{position:fixed; z-index:70; background:var(--paper); border:1px solid var(--rule); border-radius:8px; padding:11px 12px; box-shadow:0 18px 50px -24px rgba(0,0,0,.55); width:210px; opacity:0; transform:translateY(6px); pointer-events:none; transition:.2s var(--ease);}
+#versePop.show{opacity:1; transform:none; pointer-events:auto;}
+#versePop .vp-title{font-family:var(--font-ui); font-weight:600; font-size:.62rem; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-strong); margin-bottom:9px;}
+#versePop .vp-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:5px; max-height:210px; overflow:auto;}
+#versePop .vp-grid button{font:inherit; font-size:.66rem; padding:5px 0; border:1px solid var(--rule); background:var(--chip); color:var(--ink-strong); border-radius:5px; cursor:pointer; transition:.15s;}
+#versePop .vp-grid button.r{color:var(--red); border-color:color-mix(in srgb,var(--red) 40%, transparent);}
+#versePop .vp-grid button:hover{border-color:var(--ink-strong); background:var(--bg2);}
 
 /* ---------- WALL ---------- */
 #wall{position:fixed; inset:60px 0 0 0; z-index:10;}
@@ -547,7 +556,7 @@ function buildRuler(){
     const h=document.createElement('div'); h.className='rbook'; h.textContent=BOOKMETA[bk].name; ruler.appendChild(h);
     [...byBook[bk]].sort((a,b)=>a-b).forEach(ch=>{
       const c=document.createElement('span'); c.className='rch'; c.textContent=ch; c.dataset.book=bk; c.dataset.chap=ch;
-      c.onclick=()=>jumpTo(bk,ch); ruler.appendChild(c);
+      c.onclick=(e)=>{ e.stopPropagation(); jumpTo(bk,ch); openVersePop(bk,ch,c); }; ruler.appendChild(c);
     });
   });
 }
@@ -564,6 +573,21 @@ function jumpTo(bk,ch){
   centerOnIndex(i,true);
   document.querySelectorAll('.ruler .rch').forEach(e=>e.classList.toggle('active', e.dataset.book===bk && +e.dataset.chap===ch));
 }
+
+/* ---- verse picker popover (jump straight to any verse) ---- */
+const versePop=document.createElement('div'); versePop.id='versePop'; document.body.appendChild(versePop);
+function openVersePop(bk,ch,anchorEl){
+  const list=verses.map((v,i)=>({v,i})).filter(o=>o.v.book===bk && o.v.chapter===ch);
+  versePop.innerHTML='<div class="vp-title">'+BOOKMETA[bk].name+' '+ch+' · verse</div><div class="vp-grid">'+
+    list.map(o=>'<button data-i="'+o.i+'"'+(o.v.isJesus?' class="r"':'')+'>'+o.v.verse+'</button>').join('')+'</div>';
+  const r=anchorEl.getBoundingClientRect();
+  let left=r.right+10; if(left+220>window.innerWidth) left=Math.max(8,r.left-228);
+  let top=r.top-6; if(top+252>window.innerHeight) top=Math.max(70,window.innerHeight-262);
+  versePop.style.left=left+'px'; versePop.style.top=top+'px';
+  versePop.classList.add('show');
+}
+versePop.addEventListener('click',e=>{ const b=e.target.closest('button[data-i]'); if(!b) return; centerOnIndex(+b.dataset.i,true); versePop.classList.remove('show'); });
+document.addEventListener('click',e=>{ if(versePop.classList.contains('show') && !versePop.contains(e.target) && !e.target.classList.contains('rch')) versePop.classList.remove('show'); });
 
 /* ---- scholar desk card ---- */
 const desk=document.getElementById('desk'), deskCard=document.getElementById('deskCard'), connector=document.getElementById('connector');
