@@ -673,12 +673,28 @@ document.getElementById('dcMore').onclick=()=>openOv(document.getElementById('qu
 document.getElementById('aboutBtn').onclick=()=>openOv(document.getElementById('about'));
 
 /* ---- featured passage (deterministic by date) ---- */
+function pickLanding(){
+  // candidates: a short red saying (so it reads as a phrase) that sits next to grey
+  // narrative, so you land on the letters in RED framed by the grey context
+  const cand=[];
+  for(let i=1;i<N-1;i++){
+    const v=verses[i];
+    if(!v.isJesus) continue;
+    if((v.web||'').length>130) continue;
+    const p=verses[i-1], n=verses[i+1];
+    const pg=p && p.book===v.book && p.chapter===v.chapter && !p.isJesus;
+    const ng=n && n.book===v.book && n.chapter===v.chapter && !n.isJesus;
+    if(pg||ng) cand.push(i);
+  }
+  if(!cand.length) return 8;
+  // HOOK: later, skew this pick by season / calendar events instead of pure random
+  return cand[Math.floor(Math.random()*cand.length)];
+}
 function landOpening(){
-  // open on Matthew 5 (Sermon on the Mount): narrator in grey, the Beatitudes in red,
-  // so the red-letter contrast reads instantly
-  centerOnIndex(8,false);
-  setTimeout(()=>centerOnIndex(8,false),80);
-  setTimeout(()=>centerOnIndex(8,false),260);
+  const idx=pickLanding();
+  centerOnIndex(idx,false);
+  setTimeout(()=>centerOnIndex(idx,false),80);
+  setTimeout(()=>centerOnIndex(idx,false),260);
 }
 
 /* ---- init ---- */
