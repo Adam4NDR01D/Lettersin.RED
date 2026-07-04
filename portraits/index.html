@@ -55,12 +55,7 @@ a{color:var(--red);}
 
 <script>
 const W='https://en.wikipedia.org/wiki/';
-function u(p){
-  if(!p) return null;
-  let path=p;
-  if(path.indexOf('thumb/')===0){ path=path.replace(/^thumb\//,'').replace(/\/[^/]*$/,''); }
-  return 'https://wsrv.nl/?url='+encodeURIComponent('upload.wikimedia.org/wikipedia/commons/'+path)+'&w=560&output=jpg';
-}
+function u(p){ return p? 'https://upload.wikimedia.org/wikipedia/commons/'+p : null; }
 const DATA={
  "Manuscripts — real artifact photographs (public domain, safe to publish)":[
   {nm:"Codex Sinaiticus",dt:"4th c. · oldest near-complete NT",img:"4/4a/Sinaiticus_text.jpg",wiki:"Codex_Sinaiticus",pub:1,note:"A real photograph of the actual manuscript. The strongest, most honest anchor on the whole map — no imagining required."},
@@ -121,12 +116,11 @@ Object.keys(DATA).forEach(sec=>{
   });
   app.appendChild(g);
 });
-// throttled loader — a few at a time so Wikimedia / the proxy don't rate-limit; retries once
+// gentle throttled loader — 2 at a time, no referrer, retries so Wikimedia doesn't rate-limit the bulk
 const queue=[...document.querySelectorAll('img[data-src]')];
-function load(im,tries){ im.onerror=()=>{ if(tries>0){ setTimeout(()=>load(im,tries-1),1200); } else { advance(); } }; im.onload=()=>advance(); im.src=im.dataset.src+(tries<2?'&_r='+tries:''); }
 let active=0;
-function advance(){ active--; pump(); }
-function pump(){ while(active<3 && queue.length){ active++; load(queue.shift(),2); } }
+function start(im,tries){ im.referrerPolicy='no-referrer'; im.onload=()=>{active--;setTimeout(pump,150);}; im.onerror=()=>{ if(tries>0){ setTimeout(()=>start(im,tries-1),2200);} else {active--;setTimeout(pump,150);} }; im.src=im.dataset.src+(tries<2?('?r='+tries):''); }
+function pump(){ while(active<2 && queue.length){ active++; start(queue.shift(),2); } }
 pump();
 </script>
 </body>
