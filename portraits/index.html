@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Letters in RED — Portrait Research Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#ff5a3c;--ink:#e9e6f2;--mut:#a7a3ba;--line:rgba(255,255,255,.12);--card:#15131f;}
+*{box-sizing:border-box;}
+body{margin:0;background:radial-gradient(1200px 700px at 25% 12%,#181231 0%,#0b0a14 55%,#07060d 85%);color:var(--ink);font-family:Spectral,Georgia,serif;line-height:1.6;}
+.wrap{max-width:1120px;margin:0 auto;padding:44px 24px 80px;}
+h1{font-family:Literata,serif;font-weight:600;font-size:2.1rem;margin:0 0 4px;}
+.sub{color:var(--mut);font-size:1rem;max-width:760px;}
+.eyebrow{font-family:Spectral;font-weight:600;letter-spacing:.2em;text-transform:uppercase;font-size:.66rem;color:var(--red);}
+h2{font-family:Literata,serif;font-weight:600;font-size:1.4rem;margin:48px 0 4px;border-top:1px solid var(--line);padding-top:26px;}
+.lead{color:var(--mut);font-size:.92rem;margin:0 0 20px;max-width:820px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#000;}
+.imgwrap{position:relative;aspect-ratio:1/1;background:#0d0b16;overflow:hidden;}
+.imgwrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.imgwrap .tag{position:absolute;left:0;bottom:0;font-family:Spectral;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,0,0,.6);color:#cfc9e0;padding:3px 8px;}
+/* screenprint / duotone preview */
+.styled img{filter:grayscale(1) contrast(1.22) brightness(.96) sepia(.18);}
+.styled::before{content:'';position:absolute;inset:0;background:#c0402f;mix-blend-mode:screen;opacity:.34;pointer-events:none;}
+.styled::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.55) 1px,transparent 1.5px);background-size:4px 4px;mix-blend-mode:multiply;opacity:.4;pointer-events:none;}
+.styled .tag{color:var(--red);}
+.noimg{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mut);font-family:Spectral;font-size:.8rem;padding:16px;background:repeating-linear-gradient(45deg,#141020,#141020 8px,#181327 8px,#181327 16px);}
+.body{padding:13px 15px 15px;}
+.nm{font-family:Literata;font-weight:600;font-size:1.02rem;}
+.dt{color:var(--red);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;margin:2px 0 8px;}
+.note{color:#cbc7da;font-size:.82rem;}
+.src{display:inline-block;margin-top:10px;font-size:.72rem;color:var(--red);text-decoration:none;border-bottom:1px solid rgba(255,90,60,.35);}
+.flag{display:inline-block;margin-top:9px;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
+.pub{background:rgba(80,200,120,.12);color:#7fe0a0;}
+.ref{background:rgba(255,90,60,.12);color:#ff8a6c;}
+.callout{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:0 12px 12px 0;padding:16px 20px;margin:18px 0;font-size:.9rem;color:#d6d2e4;}
+.callout b{color:#fff;}
+a{color:var(--red);}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="eyebrow">Letters in RED · sourcing dossier</div>
+<h1>Portrait Research Board</h1>
+<p class="sub">Every candidate image for the Timeline's star-map, grouped by how much we can trust it — with a live screenprint preview beside each public-domain image, so you can see our art direction "passing" for the picture people already know. Click any source to verify its licence on Wikimedia.</p>
+
+<div id="app"></div>
+
+<div class="callout" style="margin-top:44px">
+<b>How to read the previews.</b> The <b>left</b> tile is the original public-domain image; the <b>right</b> tile is the same picture run through a live CSS duotone-halftone (our Sistine × Rivera × Soviet-screenprint direction, approximated). Final assets would get the real Adobe halftone/duotone treatment, but this shows the vibe on the actual faces.
+</div>
+</div>
+
+<script>
+const P='https://upload.wikimedia.org/wikipedia/commons/';
+const W='https://en.wikipedia.org/wiki/';
+function u(p){return p?P+p:null;}
+const DATA={
+ "Manuscripts — real artifact photographs (public domain, safe to publish)":[
+  {nm:"Codex Sinaiticus",dt:"4th c. · oldest near-complete NT",img:"4/4a/Sinaiticus_text.jpg",wiki:"Codex_Sinaiticus",pub:1,note:"A real photograph of the actual manuscript. The strongest, most honest anchor on the whole map — no imagining required."},
+  {nm:"Codex Vaticanus",dt:"4th c. · c.325–350",img:"e/e9/Codex_Vaticanus_B%2C_2Thess._3%2C11-18%2C_Hebr._1%2C1-2%2C2.jpg",wiki:"Codex_Vaticanus",pub:1,note:"Real manuscript photo. Lacks the long ending of Mark and the woman caught in adultery — a visible 'seam.'"},
+  {nm:"Rylands Papyrus P52",dt:"c.125 · debated · earliest John",img:"thumb/2/24/Manchester%2C_John_Rylands_Library_Ms_Greek_P_457_%28Papyrus_52%29_recto_John_18%2C_31-33.jpg/960px-Manchester%2C_John_Rylands_Library_Ms_Greek_P_457_%28Papyrus_52%29_recto_John_18%2C_31-33.jpg",wiki:"Rylands_Library_Papyrus_P52",pub:1,note:"A real photo of the fragment itself — a scrap the size of a credit card. Its date is genuinely contested (c.100–175)."},
+  {nm:"Nag Hammadi · Gospel of Thomas",dt:"found 1945 · Coptic",img:"4/42/El_Evangelio_de_Tom%C3%A1s-Gospel_of_Thomas-_Codex_II_Manuscritos_de_Nag_Hammadi-The_Nag_Hammadi_manuscripts.png",wiki:"Nag_Hammadi_library",pub:1,note:"Photo of the actual Nag Hammadi codex page. The parallel-track sayings gospel, honestly shown as a manuscript, not a face."}
+ ],
+ "Pre-modern figures — accepted period portraits & engravings (public domain)":[
+  {nm:"Jerome",dt:"c.405 · Latin Vulgate",img:"5/5f/MatthiasStom-SaintJerome-Nantes.jpg",wiki:"Jerome",pub:1,note:"Artistic depiction (Matthias Stom). No authentic likeness — imagined, but part of the accepted iconography."},
+  {nm:"John Wycliffe",dt:"1382 · English, from the Latin",img:"b/b8/Wycliffe_by_Kirby.jpg",wiki:"John_Wycliffe",pub:1,note:"Kirby engraving — a posthumous imagining, but the likeness people recognise."},
+  {nm:"Martin Luther",dt:"1522 · German NT",img:"thumb/9/90/Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg/960px-Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg",wiki:"Martin_Luther",pub:1,note:"Painted from life by Lucas Cranach, 1528 — an actual likeness, rare for this list."},
+  {nm:"William Tyndale",dt:"1526 · from the Greek",img:"thumb/6/64/Beza%27s_Icones%2C_contemporary_portraits_of_reformers_of_religion_and_letters_-_William_Tindale_on_Page_58.jpg/960px-Beza%27s_Icones%2C_contemporary_portraits_of_reformers_of_religion_and_letters_-_William_Tindale_on_Page_58.jpg",wiki:"William_Tyndale",pub:1,note:"From Beza's Icones (1580). ~83% of the KJV New Testament keeps his wording."},
+  {nm:"Myles Coverdale",dt:"1535 · first full printed English Bible",img:"2/26/Myles_Coverdale.jpg",wiki:"Myles_Coverdale",pub:1,note:"Period portrait."},
+  {nm:"Louis Klopsch",dt:"1899 / 1901 · red-letter inventor",img:"thumb/3/33/Klopsch.jpg/960px-Klopsch.jpg",wiki:"Louis_Klopsch",pub:1,note:"A real photograph (d.1910). The man who first printed Jesus's words in red."}
+ ],
+ "The ancients — the brief for imagining ours (no authentic likeness exists)":[
+  {nm:"Christ — Byzantine",dt:"Hagia Sophia mosaic · a grounded Eastern face",img:"5/52/Jesus-Christ-from-Hagia-Sophia.jpg",wiki:"Depictions_of_Jesus",pub:1,note:"Public domain, and far more Semitic than the later Western tradition. The Sinai Pantocrator (6th c.) is an even older PD candidate. Scholarly likeness (Joan Taylor, 2018): a Judean Jew, ~5'5\", olive-brown skin, dark hair, short beard, sun-weathered — NOT the 1940 blond Sallman (copyrighted) or Neave's 2001 forensic reconstruction (copyrighted), which we describe rather than show. Ground ours here."},
+  {nm:"Papias of Hierapolis",dt:"c.60–130 · Anatolia",img:"6/63/Papias.png",wiki:"Papias_of_Hierapolis",pub:1,note:"A later European engraving standing in for a man with no likeness. Reality: a Greek-speaking Anatolian of the Roman East — imagine him accordingly, not as a Northern European."},
+  {nm:"Irenaeus",dt:"c.130–202 · born Smyrna → Lyon",img:"thumb/3/38/Saint_irenee_saint_irenee.jpg/960px-Saint_irenee_saint_irenee.jpg",wiki:"Irenaeus",pub:1,note:"Later Latinized church art. Reality: an eastern-Mediterranean Greek who heard Polycarp as a boy. De-Westernize."}
+ ],
+ "Modern scholars — reference only (copyrighted; for your private review, not for publishing)":[
+  {nm:"A. T. Robertson",dt:"1863–1934",img:null,wiki:"A._T._Robertson",pub:0,note:"No free portrait surfaced (a public-domain photo may exist — d.1934). Default to his book or an emblem."},
+  {nm:"Rudolf Bultmann",dt:"1884–1976",img:"thumb/7/7a/Rudolf_Bultmann_als_Portr%C3%A4tb%C3%BCste_von_Michael_Mohns.JPG/960px-Rudolf_Bultmann_als_Portr%C3%A4tb%C3%BCste_von_Michael_Mohns.JPG",wiki:"Rudolf_Bultmann",pub:0,note:"Wikipedia's image is a portrait bust — reference only."},
+  {nm:"J. A. T. Robinson",dt:"1919–1983",img:"7/76/John-Arthur-Thomas-Robinson.jpg",wiki:"John_Robinson_(bishop_of_Woolwich)",pub:0,note:"Photograph — reference only (copyright)."},
+  {nm:"John Wenham",dt:"1913–1996",img:null,wiki:"John_Wenham",pub:0,note:"No free portrait → book or emblem."},
+  {nm:"Richard Bauckham",dt:"b.1946 · living",img:"4/4b/%EB%A6%AC%EC%B2%98%EB%93%9C_%EB%B3%B4%EC%BB%B4.jpg",wiki:"Richard_Bauckham",pub:0,note:"Photograph — reference only (copyright); living scholar. Honour with his book, Jesus and the Eyewitnesses."},
+  {nm:"Bart D. Ehrman",dt:"b.1955 · living",img:"thumb/b/bb/Bart-d-ehrman-2012-wikipedia.jpg/960px-Bart-d-ehrman-2012-wikipedia.jpg",wiki:"Bart_D._Ehrman",pub:0,note:"Photograph — reference only (copyright); living scholar."},
+  {nm:"Mark Goodacre",dt:"b.1967 · living",img:null,wiki:"Mark_Goodacre",pub:0,note:"No free portrait → book or emblem."},
+  {nm:"Simon Gathercole",dt:"b.1974 · living",img:null,wiki:"Simon_Gathercole",pub:0,note:"No free portrait → book or emblem."},
+  {nm:"April DeConick",dt:"living",img:null,wiki:"April_DeConick",pub:0,note:"No free portrait → book or emblem."}
+ ]
+};
+const leads={
+ "Manuscripts — real artifact photographs (public domain, safe to publish)":"The gold standard: no imagining at all. These are photographs of the things themselves. Lead with these.",
+ "Pre-modern figures — accepted period portraits & engravings (public domain)":"Free to use and to stylize. Mostly posthumous imaginings (only Luther was painted from life), but they're the faces people expect — perfect for the screenprint treatment.",
+ "The ancients — the brief for imagining ours (no authentic likeness exists)":"No photograph can exist. This section is the reference brief for generating our own — grounded in scholarship and real geography, deliberately away from the Northern-European whitewash.",
+ "Modern scholars — reference only (copyrighted; for your private review, not for publishing)":"Gathered so you can look and decide. We should NOT publish these photos. Honour each with their key book, an emblem, or a commissioned/stylized image — your call, per person."
+};
+const app=document.getElementById('app');
+Object.keys(DATA).forEach(sec=>{
+  const h=document.createElement('h2'); h.textContent=sec; app.appendChild(h);
+  const l=document.createElement('p'); l.className='lead'; l.textContent=leads[sec]||''; app.appendChild(l);
+  const g=document.createElement('div'); g.className='grid';
+  DATA[sec].forEach(d=>{
+    const c=document.createElement('div'); c.className='card';
+    const imgUrl=u(d.img);
+    let pair;
+    if(imgUrl){
+      pair='<div class="pair"><div class="imgwrap"><img loading="lazy" src="'+imgUrl+'"><span class="tag">original</span></div>'+
+           (d.pub?'<div class="imgwrap styled"><img loading="lazy" src="'+imgUrl+'"><span class="tag">screenprint</span></div>':'<div class="imgwrap"><div class="noimg">reference only<br>— not for publishing —</div></div>')+'</div>';
+    } else {
+      pair='<div class="noimg">No free portrait.<br>Use their book or an emblem.</div>';
+    }
+    c.innerHTML=pair+'<div class="body"><div class="nm">'+d.nm+'</div><div class="dt">'+d.dt+'</div><div class="note">'+d.note+'</div>'+
+      '<span class="flag '+(d.pub?'pub">public domain':'ref">reference only')+'</span><br>'+
+      '<a class="src" href="'+W+d.wiki+'" target="_blank" rel="noopener">Source & licence ↗</a></div>';
+    g.appendChild(c);
+  });
+  app.appendChild(g);
+});
+</script>
+</body>
+</html>
