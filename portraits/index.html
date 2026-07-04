@@ -109,8 +109,8 @@ Object.keys(DATA).forEach(sec=>{
     const imgUrl=u(d.img);
     let pair;
     if(imgUrl){
-      pair='<div class="pair"><div class="imgwrap"><img loading="lazy" src="'+imgUrl+'"><span class="tag">original</span></div>'+
-           (d.pub?'<div class="imgwrap styled"><img loading="lazy" src="'+imgUrl+'"><span class="tag">screenprint</span></div>':'<div class="imgwrap"><div class="noimg">reference only<br>— not for publishing —</div></div>')+'</div>';
+      pair='<div class="pair"><div class="imgwrap"><img data-src="'+imgUrl+'"><span class="tag">original</span></div>'+
+           (d.pub?'<div class="imgwrap styled"><img data-src="'+imgUrl+'"><span class="tag">screenprint</span></div>':'<div class="imgwrap"><div class="noimg">reference only<br>— not for publishing —</div></div>')+'</div>';
     } else {
       pair='<div class="noimg">No free portrait.<br>Use their book or an emblem.</div>';
     }
@@ -121,6 +121,13 @@ Object.keys(DATA).forEach(sec=>{
   });
   app.appendChild(g);
 });
+// throttled loader — a few at a time so Wikimedia / the proxy don't rate-limit; retries once
+const queue=[...document.querySelectorAll('img[data-src]')];
+function load(im,tries){ im.onerror=()=>{ if(tries>0){ setTimeout(()=>load(im,tries-1),1200); } else { advance(); } }; im.onload=()=>advance(); im.src=im.dataset.src+(tries<2?'&_r='+tries:''); }
+let active=0;
+function advance(){ active--; pump(); }
+function pump(){ while(active<3 && queue.length){ active++; load(queue.shift(),2); } }
+pump();
 </script>
 </body>
 </html>
