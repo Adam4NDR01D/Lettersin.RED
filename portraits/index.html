@@ -54,9 +54,13 @@ a{color:var(--red);}
 </div>
 
 <script>
-const P='https://upload.wikimedia.org/wikipedia/commons/';
 const W='https://en.wikipedia.org/wiki/';
-function u(p){return p?P+p:null;}
+function u(p){
+  if(!p) return null;
+  let path=p;
+  if(path.indexOf('thumb/')===0){ path=path.replace(/^thumb\//,'').replace(/\/[^/]*$/,''); }
+  return 'https://wsrv.nl/?url='+encodeURIComponent('upload.wikimedia.org/wikipedia/commons/'+path)+'&w=560&output=jpg';
+}
 const DATA={
  "Manuscripts — real artifact photographs (public domain, safe to publish)":[
   {nm:"Codex Sinaiticus",dt:"4th c. · oldest near-complete NT",img:"4/4a/Sinaiticus_text.jpg",wiki:"Codex_Sinaiticus",pub:1,note:"A real photograph of the actual manuscript. The strongest, most honest anchor on the whole map — no imagining required."},
