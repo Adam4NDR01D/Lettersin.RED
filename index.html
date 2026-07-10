@@ -251,6 +251,15 @@ html.voice-on .v.aramaic{ }
 #cLegendPanel dd{margin:2px 0 0; font-size:.76rem; line-height:1.45; color:#c7c3d6;}
 @media (max-width:760px){ #cLegendPanel{width:88%;} .clabel{font-size:10px;} }
 
+/* ---------- TOOLTIP TUTORIAL ---------- */
+#tip{position:fixed; z-index:90; max-width:266px; background:var(--paper); color:var(--ink-strong); border:1px solid var(--rule); border-radius:9px; padding:9px 12px; box-shadow:0 16px 40px -20px rgba(0,0,0,.55); font-family:var(--font-ui); font-size:.72rem; line-height:1.45; opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .14s, transform .14s;}
+#tip.show{opacity:1; transform:none; pointer-events:auto;}
+#tip .tt{font-weight:600; font-size:.78rem; display:block; margin-bottom:2px; letter-spacing:.02em;}
+#tip .ti{color:var(--red); font-weight:600; cursor:pointer; margin-top:6px; display:inline-block; letter-spacing:.04em;}
+#explain .sheet{max-width:640px;}
+#explain p{margin:.55em 0;}
+#voiceBtn{padding:6px 10px; font-size:.62rem;}
+
 /* ---------- RESPONSIVE ---------- */
 @media (max-width:1180px){ :root{--gutter:300px;} .card{width:262px;} }
 @media (max-width:980px){
@@ -369,6 +378,26 @@ html.voice-on .v.aramaic{ }
   <p style="font-size:.78rem;color:var(--ink)">Scripture reproduced verbatim from public-domain sources. The red-letter spans are an editorial choice and are presented as such; in John 3 the red ends at verse 15 by default, with the dispute shown in Scholar mode.</p>
 </div></div></div>
 
+
+<!-- EXPLAINER (a quick guide) -->
+<div class="overlay" id="explain"><div class="sheet"><button class="close" data-close>×</button><div class="pad">
+  <div class="eyebrow">A quick guide</div>
+  <h2>What you're looking at</h2>
+  <p class="lede">Every control here is a different way of seeing the same words more honestly.</p>
+  <div id="explain-translations">
+    <div class="eyebrow" style="margin-top:20px">The three texts</div>
+    <p><b>WEB — World English Bible.</b> A modern English translation, completed in 2020, and fully public domain — which is why we can show it freely. It's a careful update of the 1901 American Standard Version, and it's the primary text here.</p>
+    <p><b>KJV — King James Version.</b> The famous 1611 English Bible. About 83% of its New Testament keeps William Tyndale's 1526 wording, so reading it is following a chain that runs back five centuries.</p>
+    <p><b>Ἑλλ — the original Greek.</b> The Textus Receptus (Stephanus, 1550), the Greek the KJV was translated from. There were no quotation marks and no colour here — so seeing "red letters" in Greek is seeing something that was never actually printed red. That's the whole idea.</p>
+    <p style="font-size:.82rem;color:var(--ink)">How they relate: Greek → Latin → a long line of English (Wycliffe 1382 → Tyndale 1526 → Geneva 1560 → KJV 1611 → ASV 1901 → WEB 2020). The Timeline draws the full family tree.</p>
+  </div>
+  <div id="explain-modes">
+    <div class="eyebrow" style="margin-top:20px">Reading modes</div>
+    <p><b>Purist.</b> A clean, quiet read — just the letters in red and the grey around them, nothing else.</p>
+    <p><b>Scholar.</b> Turns on the history behind the text: the two-sided open questions where thoughtful people disagree, the sources, and the sayings preserved in Jesus's own Aramaic. Open <b>Questions</b> any time to read them.</p>
+    <p><b>Magnify vs. Classic.</b> Magnify swells the line you're reading and eases the rest away, like a lens. Classic lays it flat and even. <b>Paper vs. Space</b> is simply the look — a warm page or a dark sky.</p>
+  </div>
+</div></div></div>
 
 <!-- COSMOS (constellation timeline) -->
 <div class="overlay cosmos" id="cosmos"><div class="cosmos-inner">
@@ -865,6 +894,31 @@ document.getElementById('cLegendBtn').onclick=()=>document.getElementById('cLege
 document.getElementById('cResetBtn').onclick=frameGospel;
 document.getElementById('cAllBtn').onclick=frameAll;
 window.addEventListener('resize',()=>{ if(cosmosOv.classList.contains('open')) cosmosRender(); });
+
+/* ---------- descriptive tooltips (a light tutorial) ---------- */
+const tip=document.createElement('div'); tip.id='tip'; document.body.appendChild(tip);
+const TIPS={
+ '#transSeg [data-trans="web"]':['World English Bible',"Modern English, completed 2020, fully public domain. The primary text here.",'translations'],
+ '#transSeg [data-trans="kjv"]':['King James Version',"The classic 1611 English — about 83% of its New Testament is Tyndale's very wording.",'translations'],
+ '#transSeg [data-trans="grc"]':['The original Greek',"Textus Receptus (1550) — where the words were never actually printed red.",'translations'],
+ '#modeSeg [data-mode="purist"]':['Purist',"A clean, quiet read — just the letters in red.",'modes'],
+ '#modeSeg [data-mode="scholar"]':['Scholar',"The notes, sources and open questions behind the text.",'modes'],
+ '#magSeg [data-mag="on"]':['Magnify',"The reading line swells and the rest eases away.",'modes'],
+ '#magSeg [data-mag="off"]':['Classic',"A flat, even column for straight reading.",'modes'],
+ '#themeSeg [data-theme="vellum"]':['Paper',"Warm off-white, like a printed page.",'modes'],
+ '#themeSeg [data-theme="obsidian"]':['Space',"Dark and easy on the eyes.",'modes'],
+ '#tlBtn':['Timeline',"How these words travelled — a voice, to Greek, to English, to red.",null],
+ '#qBtn':['Open questions',"Where thoughtful people disagree — shown two-sided, never settled.",null],
+ '#voiceBtn':['Original voice',"The rare sayings kept in Jesus's own Aramaic.",null],
+ '#aboutBtn':['About',"What this is, and the choices behind it.",null]
+};
+Object.entries(TIPS).forEach(([sel,v])=>document.querySelectorAll(sel).forEach(el=>{ el.dataset.tt=v[0]; el.dataset.tb=v[1]; if(v[2]) el.dataset.tm=v[2]; }));
+document.querySelectorAll('#transSeg,#modeSeg,#magSeg,#themeSeg').forEach(s=>s.removeAttribute('title'));
+function showTip(el){ tip.innerHTML='<span class="tt">'+el.dataset.tt+'</span>'+el.dataset.tb+(el.dataset.tm?'<br><span class="ti" data-sec="'+el.dataset.tm+'">ⓘ learn more</span>':''); const r=el.getBoundingClientRect(); tip.style.left=Math.min(window.innerWidth-274, Math.max(8, r.left))+'px'; tip.style.top=(r.bottom+8)+'px'; tip.classList.add('show'); }
+document.addEventListener('mouseover',e=>{ const el=e.target.closest('[data-tt]'); if(el) showTip(el); });
+document.addEventListener('mouseout',e=>{ const el=e.target.closest('[data-tt]'); if(!el) return; const to=e.relatedTarget; if(to && (el.contains(to)||tip.contains(to)||to===tip)) return; tip.classList.remove('show'); });
+tip.addEventListener('mouseleave',()=>tip.classList.remove('show'));
+tip.addEventListener('click',e=>{ const m=e.target.closest('.ti'); if(!m) return; openOv(document.getElementById('explain')); const t=document.getElementById('explain-'+m.dataset.sec); if(t) setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),80); tip.classList.remove('show'); });
 
 /* ---- init ---- */
 function init(){
