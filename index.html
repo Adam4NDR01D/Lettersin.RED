@@ -394,7 +394,7 @@ html.voice-on .v.aramaic{ }
   <div id="explain-modes">
     <div class="eyebrow" style="margin-top:20px">Reading modes</div>
     <p><b>Purist.</b> A clean, quiet read — just the letters in red and the grey around them, nothing else.</p>
-    <p><b>Scholar.</b> Turns on the history behind the text: the two-sided open questions where thoughtful people disagree, the sources, and the sayings preserved in Jesus's own Aramaic. Open <b>Questions</b> any time to read them.</p>
+    <p><b>Scholar.</b> Turns on the history behind the text: the two-sided open questions, where thoughtful people dig deep into how and who carried these books through the centuries. That discourse invites real mystery, and honest disagreement, and it's open to everyone. But some just want the simple wisdom already sitting in the red letters, and that quiet read is exactly what Purist is for. Open <b>Questions</b> any time to wade in.</p>
     <p><b>Magnify vs. Classic.</b> Magnify swells the line you're reading and eases the rest away, like a lens. Classic lays it flat and even. <b>Paper vs. Space</b> is simply the look — a warm page or a dark sky.</p>
   </div>
 </div></div></div>
@@ -915,9 +915,11 @@ const TIPS={
 Object.entries(TIPS).forEach(([sel,v])=>document.querySelectorAll(sel).forEach(el=>{ el.dataset.tt=v[0]; el.dataset.tb=v[1]; if(v[2]) el.dataset.tm=v[2]; }));
 document.querySelectorAll('#transSeg,#modeSeg,#magSeg,#themeSeg').forEach(s=>s.removeAttribute('title'));
 function showTip(el){ tip.innerHTML='<span class="tt">'+el.dataset.tt+'</span>'+el.dataset.tb+(el.dataset.tm?'<br><span class="ti" data-sec="'+el.dataset.tm+'">ⓘ learn more</span>':''); const r=el.getBoundingClientRect(); tip.style.left=Math.min(window.innerWidth-274, Math.max(8, r.left))+'px'; tip.style.top=(r.bottom+8)+'px'; tip.classList.add('show'); }
-document.addEventListener('mouseover',e=>{ const el=e.target.closest('[data-tt]'); if(el) showTip(el); });
-document.addEventListener('mouseout',e=>{ const el=e.target.closest('[data-tt]'); if(!el) return; const to=e.relatedTarget; if(to && (el.contains(to)||tip.contains(to)||to===tip)) return; tip.classList.remove('show'); });
-tip.addEventListener('mouseleave',()=>tip.classList.remove('show'));
+let hideT;
+document.addEventListener('mouseover',e=>{ const el=e.target.closest('[data-tt]'); if(el){ clearTimeout(hideT); showTip(el); } });
+document.addEventListener('mouseout',e=>{ const el=e.target.closest('[data-tt]'); if(!el) return; clearTimeout(hideT); hideT=setTimeout(()=>tip.classList.remove('show'),450); });
+tip.addEventListener('mouseenter',()=>clearTimeout(hideT));
+tip.addEventListener('mouseleave',()=>{ clearTimeout(hideT); hideT=setTimeout(()=>tip.classList.remove('show'),200); });
 tip.addEventListener('click',e=>{ const m=e.target.closest('.ti'); if(!m) return; openOv(document.getElementById('explain')); const t=document.getElementById('explain-'+m.dataset.sec); if(t) setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),80); tip.classList.remove('show'); });
 
 /* ---- init ---- */
