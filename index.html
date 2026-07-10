@@ -119,21 +119,15 @@ html[data-trans="grc"] .ln{font-family:var(--font-greek); letter-spacing:.01em;}
 #nowref{position:fixed; left:24px; bottom:20px; z-index:25; font-family:var(--font-ui); font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink); opacity:.55; pointer-events:none;}
 @media (max-width:760px){ #nowref{left:14px; bottom:64px;} }
 
-/* Scholar mode niceties */
-html[data-mode="scholar"] .v.note .t{
-  background:linear-gradient(transparent 62%, color-mix(in srgb, var(--red) 22%, transparent) 0);
-  background-size:0% 100%; background-repeat:no-repeat;
-  transition:background-size .6s var(--ease);
-}
-html[data-mode="scholar"] .v.note.lit .t{background-size:100% 100%;}
-html[data-mode="scholar"] .v.aramaic .t::after{content:" ◦"; color:var(--red); opacity:.7;}
+/* Scholar mode: inline note pip on annotated verses — it rides the fisheye */
+html[data-mode="scholar"] .ln.note{cursor:pointer;}
+html[data-mode="scholar"] .ln.note::after{content:"\25E6"; color:var(--red); font-size:.6em; vertical-align:.32em; margin-left:.18em; opacity:.9; text-shadow:var(--redglow);}
 html[data-mode="purist"] #desk, html[data-mode="purist"] .scholar-only{display:none !important;}
-html[data-mode="purist"] .v.note .t{background:none;}
 
-/* original-voice highlight */
-html.voice-on .v:not(.aramaic) .t{opacity:.16;}
-html.voice-on .v.aramaic .t{opacity:1;}
-html.voice-on .v.aramaic{ }
+/* Original Voice: dim everything but the preserved Aramaic sayings */
+html.voice-on .ln:not(.aramaic){opacity:.12 !important;}
+html.voice-on .ln.aramaic{opacity:1 !important;}
+html.voice-on .ln.aramaic.red{text-shadow:0 0 24px color-mix(in srgb, var(--red) 55%, transparent);}
 
 /* ---------- DESK (scholar margin cards) ---------- */
 #desk{position:fixed; right:0; top:60px; bottom:0; width:var(--gutter); z-index:20; pointer-events:none;}
@@ -252,7 +246,7 @@ html.voice-on .v.aramaic{ }
 @media (max-width:760px){
   #cLegendPanel{width:88%;} .clabel{font-size:10px;}
   .cosmos-top{padding:0 10px; height:50px;}
-  .cosmos-top .eyebrow{font-size:.5rem; letter-spacing:.1em; flex:none;}
+  .cosmos-top .eyebrow{display:none;}   /* free the row so Legend/Era/Span/Close all fit */
   .cosmos-ctl{gap:6px; min-width:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
   .cosmos-ctl::-webkit-scrollbar{display:none;}
   .overlay.cosmos .iconbtn{padding:6px 9px; font-size:.56rem;}
@@ -280,6 +274,7 @@ html.voice-on .v.aramaic{ }
   .ruler .rbook{margin:0 4px 0 10px; font-size:.56rem;}
   .ruler .rch{margin:0 2px;}
   #wall{inset:60px 0 54px 0;}
+  .hint{bottom:60px;}   /* clear the bottom ruler bar */
   /* header: brand hugs left, controls become a swipeable strip so none go off-screen */
   header{gap:8px; padding:0 10px;}
   header .spacer{display:none;}
@@ -562,7 +557,8 @@ function buildLines(){
     const ls=wrapVerse(txt(v)||v.web);
     firstLineOfVerse[vi]=lines.length;
     const mk = v.verse===1 ? v.chapter+':'+v.verse : ''+v.verse;
-    ls.forEach((s,k)=>lines.push({text:s, isJesus:v.isJesus, seg:vi, first:k===0, mark:k===0?mk:null}));
+    ls.forEach((s,k)=>lines.push({text:s, isJesus:v.isJesus, seg:vi, first:k===0, mark:k===0?mk:null,
+      noteId:(k===0)?(v.noteId||null):null, aramaic:v.noteId==='voice'?1:0}));
   });
   NL=lines.length; FLAT=NL*LH;
 }
@@ -582,6 +578,8 @@ const nowref=document.createElement('div'); nowref.id='nowref'; document.body.ap
 function render(){
   if(!NL||!FLAT) return;
   const magOn=html.getAttribute('data-magnify')!=='off';
+  const scholarMode=html.getAttribute('data-mode')==='scholar';
+  let noteBest=null;
   pos += (target-pos)*0.18; if(Math.abs(target-pos)<0.06) pos=target;
   const P=((pos%FLAT)+FLAT)%FLAT;
   const vh=wall.clientHeight, cy=vh/2, ci0=Math.floor(P/LH);
@@ -596,12 +594,14 @@ function render(){
     const g=(s-1)/BOOST; el.style.opacity=magOn?(MINOP+(1-MINOP)*g).toFixed(3):'1';
     const key=(L.mark||'')+''+L.text;
     if(el._t!==key){ el.textContent=''; if(L.mark){ const sp=document.createElement('sup'); sp.className='vn'; sp.textContent=L.mark; el.appendChild(sp); } el.appendChild(document.createTextNode((L.mark?' ':'')+L.text)); el._t=key; }
-    const cls='ln'+(L.book?' book':'')+(L.isJesus?' red':'');
+    const cls='ln'+(L.book?' book':'')+(L.isJesus?' red':'')+(L.noteId?' note':'')+(L.aramaic?' aramaic':'');
     if(el.className!==cls) el.className=cls;
     el.dataset.seg=(L.book||L.seg==null)?'':L.seg;
+    if(scholarMode && L.noteId){ const dd=Math.abs(y-cy); if(!noteBest||dd<noteBest.d) noteBest={y, d:dd, noteId:L.noteId}; }
   }
   for(let i=vis;i<pool.length;i++){ if(pool[i].style.display!=='none') pool[i].style.display='none'; }
   updateNow(P);
+  updateDeskFisheye(scholarMode?noteBest:null);
 }
 gsap.ticker.add(render);
 
@@ -669,22 +669,17 @@ document.addEventListener('click',e=>{ if(versePop.classList.contains('show') &&
 /* ---- scholar desk card ---- */
 const desk=document.getElementById('desk'), deskCard=document.getElementById('deskCard'), connector=document.getElementById('connector');
 let curNote=null;
-function updateDesk(center){
-  // find nearest noted node to center within view
-  let best=null,bestD=1e9;
-  activeSet.forEach(i=>{
-    const n=nodeRefs[i]; if(!n.v.noteId) return;
-    const nc=tops[i]+heights[i]/2; const d=Math.abs(nc-center);
-    if(d<bestD){bestD=d;best={i,nc,note:n.v.noteId};}
-  });
-  if(!best || bestD>vh*0.32){ if(curNote){deskCard.classList.remove('show'); clearConn(); curNote=null;} return; }
-  if(best.note!==curNote){ fillCard(best.note); curNote=best.note; deskCard.classList.add('show'); }
-  // position card centered on verse
-  const y=best.nc - scroller.scrollTop;
+function updateDeskFisheye(best){
+  // best = {y (screen px in wall), d (dist from centre), noteId} or null
+  const vh=wall.clientHeight;
+  if(desk.clientWidth<10 || !best || best.d>vh*0.42){
+    if(curNote){deskCard.classList.remove('show'); clearConn(); curNote=null;} return;
+  }
+  if(best.noteId!==curNote){ fillCard(best.noteId); curNote=best.noteId; deskCard.classList.add('show'); }
   const ch=deskCard.offsetHeight;
-  let top=Math.max(8, Math.min(vh-ch-8, y-ch/2));
+  const top=Math.max(8, Math.min(vh-ch-8, best.y-ch/2));
   deskCard.style.top=top+'px';
-  drawConn(y, top+ch/2);
+  drawConn(best.y, top+ch/2);
 }
 function fillCard(id){
   const n=NOTES[id]; if(!n) return;
@@ -696,7 +691,7 @@ function drawConn(verseY, cardY){
   connector.innerHTML='';
   const w=desk.clientWidth;
   const x1=8, x2=Math.max(8, w-300-26+6); // left edge near card
-  const ya=Math.max(6,Math.min(vh-6,verseY));
+  const ya=Math.max(6,Math.min(wall.clientHeight-6,verseY));
   const svgns="http://www.w3.org/2000/svg";
   const ln=document.createElementNS(svgns,'line'); ln.setAttribute('x1',0); ln.setAttribute('y1',ya); ln.setAttribute('x2',w-300-26); ln.setAttribute('y2',cardY); connector.appendChild(ln);
   const c=document.createElementNS(svgns,'circle'); c.setAttribute('cx',2); c.setAttribute('cy',ya); c.setAttribute('r',2.4); connector.appendChild(c);
@@ -722,8 +717,10 @@ function openPlacard(i){
 }
 stream.addEventListener('click',e=>{
   if(suppress){ suppress=false; return; }
-  const el=e.target.closest('.ln.red'); if(!el || el.dataset.seg==='') return;
-  openPlacard(+el.dataset.seg);
+  const red=e.target.closest('.ln.red');
+  if(red && red.dataset.seg!==''){ openPlacard(+red.dataset.seg); return; }
+  const note=e.target.closest('.ln.note');
+  if(note && html.getAttribute('data-mode')==='scholar'){ openOv(document.getElementById('questions')); }
 });
 
 /* ---- overlays ---- */
