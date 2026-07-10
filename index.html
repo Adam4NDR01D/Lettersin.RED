@@ -249,7 +249,14 @@ html.voice-on .v.aramaic{ }
 #cLegendPanel h4{font-family:var(--font-ui); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:#ff8a6c; margin:0 0 4px;}
 #cLegendPanel dt{font-family:var(--font-ui); font-weight:600; font-size:.8rem; margin-top:13px; color:#fff;}
 #cLegendPanel dd{margin:2px 0 0; font-size:.76rem; line-height:1.45; color:#c7c3d6;}
-@media (max-width:760px){ #cLegendPanel{width:88%;} .clabel{font-size:10px;} }
+@media (max-width:760px){
+  #cLegendPanel{width:88%;} .clabel{font-size:10px;}
+  .cosmos-top{padding:0 10px; height:50px;}
+  .cosmos-top .eyebrow{font-size:.5rem; letter-spacing:.1em; flex:none;}
+  .cosmos-ctl{gap:6px; min-width:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  .cosmos-ctl::-webkit-scrollbar{display:none;}
+  .overlay.cosmos .iconbtn{padding:6px 9px; font-size:.56rem;}
+}
 
 /* ---------- TOOLTIP TUTORIAL ---------- */
 #tip{position:fixed; z-index:90; max-width:266px; background:var(--paper); color:var(--ink-strong); border:1px solid var(--rule); border-radius:9px; padding:9px 12px; box-shadow:0 16px 40px -20px rgba(0,0,0,.55); font-family:var(--font-ui); font-size:.72rem; line-height:1.45; opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .14s, transform .14s;}
@@ -273,12 +280,16 @@ html.voice-on .v.aramaic{ }
   .ruler .rbook{margin:0 4px 0 10px; font-size:.56rem;}
   .ruler .rch{margin:0 2px;}
   #wall{inset:60px 0 54px 0;}
-  #stream{padding:42vh 20px;}
-  .v .ref{left:auto; right:0; top:-1.1em; width:auto; text-align:right; position:relative; display:block; margin-bottom:-.3em;}
-  .v.bookhead::before{margin-top:1em;}
-  .v.todays::after{left:0; top:auto; position:relative; display:inline-block; width:auto;}
-  header{gap:8px; padding:0 12px;}
-  .brand{font-size:.6rem;}
+  /* header: brand hugs left, controls become a swipeable strip so none go off-screen */
+  header{gap:8px; padding:0 10px;}
+  header .spacer{display:none;}
+  .brand{font-size:.62rem; flex:none;}
+  .ctl{flex:1 1 auto; min-width:0; flex-wrap:nowrap; justify-content:flex-start;
+       overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+       -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 22px), transparent);
+               mask-image:linear-gradient(90deg,#000 calc(100% - 22px), transparent);}
+  .ctl::-webkit-scrollbar{display:none;}
+  .ctl>*{flex:none;}
   .seg button{padding:6px 8px; font-size:.6rem;}
   .iconbtn{padding:6px 9px; font-size:.6rem;}
   .hideSm{display:none;}
@@ -533,7 +544,8 @@ let lines=[], firstLineOfVerse=[], NL=0, FLAT=0;
 function metrics(){
   const w=wall.clientWidth||window.innerWidth;
   FS = w<620 ? 20 : (w<900 ? 23 : 26);
-  LWID = Math.min(w-140, 720) / (1+BOOST);   // wrap so the magnified centre still fits
+  const sideInset = w<760 ? 34 : 140;        // mobile ruler is a bottom bar, not a side rail
+  LWID = Math.min(w-sideInset, 720) / (1+BOOST);  // wrap so the magnified centre still fits
   LH = FS*1.62;
 }
 function wrapVerse(text){
