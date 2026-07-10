@@ -765,7 +765,7 @@ document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{ setPress
 });
 function setPressed(sel,b){ document.querySelectorAll(sel+' button').forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); }
 
-document.getElementById('voiceBtn').onclick=function(){ const on=html.classList.toggle('voice-on'); this.setAttribute('aria-pressed',on); if(on){ const ai=verses.findIndex(v=>v.original_language); if(ai>=0) centerOnVerse(ai,true);} };
+document.getElementById('voiceBtn').onclick=function(){ const on=html.classList.toggle('voice-on'); this.setAttribute('aria-pressed',on); if(on){ const ai=verses.findIndex(v=>v.noteId==='voice'); if(ai>=0) centerOnVerse(ai,true);} };
 document.getElementById('tlBtn').onclick=()=>openCosmos();
 document.getElementById('qBtn').onclick=()=>openOv(document.getElementById('questions'));
 document.getElementById('dcMore').onclick=()=>openOv(document.getElementById('questions'));
