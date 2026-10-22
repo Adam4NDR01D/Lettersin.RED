@@ -18,7 +18,7 @@
 }
 /* ---------- THEMES ---------- */
 html[data-theme="vellum"]{
-  --bg:#f5f2ec; --bg2:#e9e4da; --ink:#74726f; --ink-strong:#23211e; --red:#b3331f;
+  --bg:#f5f2ec; --bg2:#e9e4da; --ink:#74726f; --ink-strong:#23211e; --red:#b3331f; --frame:#8c8880; --other:#5c6b82;
   --paper:#fbf8f0; --rule:rgba(40,34,22,.14); --chip:rgba(40,34,22,.06);
   --font-scripture:"Literata", Georgia, serif;
   --font-greek:"Literata", "Noto Serif", serif;
@@ -27,7 +27,7 @@ html[data-theme="vellum"]{
   --scripture-size: 1.95rem; --scripture-weight:400;
 }
 html[data-theme="obsidian"]{
-  --bg:#0f1014; --bg2:#0a0a0e; --ink:#9a9aa0; --ink-strong:#eceaf2; --red:#ff4d3a;
+  --bg:#0f1014; --bg2:#0a0a0e; --ink:#9a9aa0; --ink-strong:#eceaf2; --red:#ff4d3a; --frame:#86868e; --other:#93a7c6;
   --paper:#1b1712; --rule:rgba(255,250,240,.13); --chip:rgba(255,250,240,.06);
   --font-scripture:"Literata", Georgia, serif;
   --font-greek:"Literata", "Noto Serif", serif;
@@ -36,7 +36,7 @@ html[data-theme="obsidian"]{
   --scripture-size: 1.9rem; --scripture-weight:400;
 }
 html[data-theme="editorial"]{
-  --bg:#ffffff; --bg2:#f4f4f2; --ink:#6f6f6f; --ink-strong:#0e0e0e; --red:#c70d04;
+  --bg:#ffffff; --bg2:#f4f4f2; --ink:#6f6f6f; --ink-strong:#0e0e0e; --red:#c70d04; --frame:#8a8a8a; --other:#566884;
   --paper:#ffffff; --rule:rgba(0,0,0,.12); --chip:rgba(0,0,0,.05);
   --font-scripture:"Playfair Display", Georgia, serif;
   --font-greek:"Noto Serif", Georgia, serif;
@@ -113,6 +113,10 @@ header{
   font-family:var(--font-scripture); font-weight:var(--scripture-weight); color:var(--ink);
   line-height:1; will-change:top,font-size,opacity; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;}
 .ln.red{color:var(--red); text-shadow:var(--redglow); cursor:pointer;}
+/* mixed-verse honesty colours (Q3) */
+.ln .frame{color:var(--frame); text-shadow:none;}
+.ln .other{color:var(--other); text-shadow:none;}
+.ln.gm{color:var(--frame)!important; text-shadow:none!important; font-style:italic;}
 .ln.book{font-family:var(--font-ui); font-weight:600; text-transform:uppercase; letter-spacing:.24em; color:var(--ink-strong);}
 .ln .vn{font-family:var(--font-ui); font-weight:600; font-size:.4em; vertical-align:.62em; color:var(--ink); opacity:.5; letter-spacing:.02em; margin-right:.05em; text-shadow:none;}
 html[data-trans="grc"] .ln{font-family:var(--font-greek); letter-spacing:.01em;}
@@ -530,6 +534,44 @@ const verses = GOSPELS.slice().sort((a,b)=>{
 const N = verses.length;
 const redIdx = verses.map((v,i)=>v.isJesus?i:-1).filter(i=>i>=0);
 
+/* ===== Q3 mixed-verse honesty segmentation ===== */
+const VKEY=(v)=>v.book+' '+v.chapter+':'+v.verse;
+const NOFRAME=new Set(['MAT 5:31','MAT 6:31','MRK 7:10']);
+const MIXED_EXTRA=new Set(['ACT 9:4','ACT 9:6','ACT 9:10','ACT 9:11','ACT 9:15','REV 1:11','REV 1:17']);
+const EXPLICIT={
+ 'MAT 27:11':{kjv:{other:['Art thou the King of the Jews?'],red:['Thou sayest.']},web:{other:['Are you the King of the Jews?'],red:['So you say.']}},
+ 'MRK 5:9':{kjv:{other:['My name is Legion: for we are many.'],red:['What is thy name?']},web:{other:['My name is Legion, for we are many.'],red:['What is your name?']}},
+ 'JHN 1:38':{kjv:{other:['Rabbi,','where dwellest thou?'],red:['What seek ye?']},web:{other:['Rabbi','where are you staying?'],red:['What are you looking for?']}},
+ 'JHN 1:48':{kjv:{other:['Whence knowest thou me?'],red:['Before that Philip called thee, when thou wast under the fig tree, I saw thee.']},web:{other:['How do you know me?'],red:['Before Philip called you, when you were under the fig tree, I saw you.']}},
+ 'JHN 8:11':{kjv:{other:['No man, Lord.'],red:['Neither do I condemn thee: go, and sin no more.']},web:{other:['No one, Lord.'],red:['Neither do I condemn you. Go your way. From now on, sin no more.']}},
+ 'JHN 8:19':{kjv:{other:['Where is thy Father?'],red:['Ye neither know me, nor my Father: if ye had known me, ye should have known my Father also.']},web:{other:['Where is your Father?'],red:['You know neither me, nor my Father. If you knew me, you would know my Father also.']}},
+ 'JHN 8:25':{kjv:{other:['Who art thou?'],red:['Even the same that I said unto you from the beginning.']},web:{other:['Who are you?'],red:['Just what I have been saying to you from the beginning.']}},
+ 'ACT 9:5':{kjv:{other:['Who art thou, Lord?'],red:['I am Jesus whom thou persecutest: it is hard for thee to kick against the pricks.']},web:{other:['Who are you, Lord?'],red:['I am Jesus, whom you are persecuting.']}},
+ '2CO 12:9':{kjv:{other:['Most gladly therefore will I rather glory in my infirmities, that the power of Christ may rest upon me.'],red:['My grace is sufficient for thee: for my strength is made perfect in weakness.']},web:{other:['Most gladly therefore will I rather glory in my weaknesses, that the power of Christ may rest on me.'],red:['My grace is sufficient for you, for my power is made perfect in weakness.']}},
+ 'REV 22:20':{kjv:{other:['Amen. Even so, come, Lord Jesus.'],red:['Surely I come quickly.']},web:{other:['Amen! Come, Lord Jesus.'],red:['Yes, I come quickly.']}}
+};
+const FRAME_RE=/^(And |But |Then |Now |So |For |Therefore )?(he|she|they|Jesus|the [a-z]+|[A-Z][a-z]+)\s+(answered|answering|said|saith|spake|asked|cried|replied|called|commanded|declared|told)\b[^,]{0,60},/;
+const FIRSTP=/\b(I|me|my|mine|myself|we|us|our|ours)\b/;
+function leadFrameEnd(dt){ if(!dt) return 0; const m=FRAME_RE.exec(dt); if(!m) return 0; const end=m[0].length; if(FIRSTP.test(dt.slice(0,end))) return 0; return end; }
+function addMark(dt,sub,c,marks){ const i=dt.indexOf(sub); if(i>=0) marks.push({s:i,e:i+sub.length,c}); }
+function segRuns(v,dt,trans){
+  const k=VKEY(v), marks=[], EX=EXPLICIT[k]; let gapC='red';
+  if(EX){ gapC='frame'; const tt=EX[trans]||EX.kjv||EX.web;
+    (tt.other||[]).forEach(x=>addMark(dt,x,'other',marks));
+    (tt.red||[]).forEach(x=>addMark(dt,x,'red',marks));
+  } else if(!NOFRAME.has(k)){ const fe=leadFrameEnd(dt); if(fe>0) marks.push({s:0,e:fe,c:'frame'}); }
+  marks.sort((a,b)=>a.s-b.s);
+  const runs=[]; let pos=0;
+  for(const m of marks){ if(m.s<pos) continue; if(m.s>pos) runs.push({s:pos,e:m.s,c:gapC}); runs.push(m); pos=m.e; }
+  if(pos<dt.length) runs.push({s:pos,e:dt.length,c:gapC});
+  if(!runs.length) runs.push({s:0,e:dt.length,c:'red'});
+  return runs;
+}
+function sliceRuns(dt,runs,a,b){ const out=[]; for(const r of runs){ const s=Math.max(a,r.s),e=Math.min(b,r.e); if(e>s) out.push({t:dt.slice(s,e),c:r.c}); } return out; }
+verses.forEach(v=>{ if(!v.isJesus){ v._mixed=false; return; } const k=VKEY(v);
+  v._mixed = !!EXPLICIT[k] || MIXED_EXTRA.has(k) || (!NOFRAME.has(k) && (leadFrameEnd(v.web||'')>0 || leadFrameEnd(v.kjv||'')>0)); });
+
+
 /* text accessor by translation */
 function txt(v){
   const t = html.getAttribute('data-trans');
@@ -564,11 +606,21 @@ function buildLines(){
   metrics(); lines=[]; firstLineOfVerse=new Array(N); let lastBook=null;
   verses.forEach((v,vi)=>{
     if(v.book!==lastBook){ lines.push({text:BOOKMETA[v.book].name, book:true}); lastBook=v.book; }
-    const ls=wrapVerse(txt(v)||v.web);
+    const _trans=html.getAttribute('data-trans');
+    const dt=txt(v)||v.web;
+    const ls=wrapVerse(dt);
     firstLineOfVerse[vi]=lines.length;
     const mk = v.verse===1 ? v.chapter+':'+v.verse : ''+v.verse;
-    ls.forEach((s,k)=>lines.push({text:s, isJesus:v.isJesus, seg:vi, first:k===0, mark:k===0?mk:null,
-      noteId:(k===0)?(v.noteId||null):null, aramaic:v.noteId==='voice'?1:0}));
+    const vruns=(v.isJesus && _trans!=='grc') ? segRuns(v,dt,_trans) : null;
+    const gmLine=(_trans==='grc' && v.isJesus && v._mixed);
+    let _cur=0;
+    ls.forEach((s,k)=>{
+      const off=dt.indexOf(s,_cur); const st=off>=0?off:_cur; _cur=st+s.length;
+      let runs=null;
+      if(vruns){ runs=sliceRuns(dt,vruns,st,st+s.length); if(runs.length<=1 && (!runs.length||runs[0].c==='red')) runs=null; }
+      lines.push({text:s, isJesus:v.isJesus, gm:gmLine, runs:runs, seg:vi, first:k===0, mark:k===0?mk:null,
+        noteId:(k===0)?(v.noteId||null):null, aramaic:v.noteId==='voice'?1:0});
+    });
   });
   NL=lines.length; FLAT=NL*LH;
 }
@@ -602,9 +654,15 @@ function render(){
     ensurePool(vis+1); const el=pool[vis++];
     el.style.display='block'; el.style.top=y.toFixed(1)+'px'; el.style.fontSize=(FS*s).toFixed(2)+'px';
     const g=(s-1)/BOOST; el.style.opacity=magOn?(MINOP+(1-MINOP)*g).toFixed(3):'1';
-    const key=(L.mark||'')+''+L.text;
-    if(el._t!==key){ el.textContent=''; if(L.mark){ const sp=document.createElement('sup'); sp.className='vn'; sp.textContent=L.mark; el.appendChild(sp); } el.appendChild(document.createTextNode((L.mark?' ':'')+L.text)); el._t=key; }
-    const cls='ln'+(L.book?' book':'')+(L.isJesus?' red':'')+(L.noteId?' note':'')+(L.aramaic?' aramaic':'');
+    const rsig=L.runs?L.runs.map(r=>r.c[0]+r.t.length).join(','):'';
+    const key=(L.mark||'')+'\n'+rsig+'\n'+L.text;
+    if(el._t!==key){ el.textContent='';
+      if(L.mark){ const sp=document.createElement('sup'); sp.className='vn'; sp.textContent=L.mark; el.appendChild(sp); }
+      if(L.runs){ if(L.mark) el.appendChild(document.createTextNode(' '));
+        for(const r of L.runs){ if(r.c==='red'){ el.appendChild(document.createTextNode(r.t)); } else { const s2=document.createElement('span'); s2.className=r.c; s2.textContent=r.t; el.appendChild(s2); } }
+      } else { el.appendChild(document.createTextNode((L.mark?' ':'')+L.text)); }
+      el._t=key; }
+    const cls='ln'+(L.book?' book':'')+(L.gm?' gm':(L.isJesus?' red':''))+(L.noteId?' note':'')+(L.aramaic?' aramaic':'');
     if(el.className!==cls) el.className=cls;
     el.dataset.seg=(L.book||L.seg==null)?'':L.seg;
     if(scholarMode && L.noteId){ const dd=Math.abs(y-cy); if(!noteBest||dd<noteBest.d) noteBest={y, d:dd, noteId:L.noteId}; }
